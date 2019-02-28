@@ -16,14 +16,19 @@ struct Slide
 
     unsigned long score(const Slide& other)
     {
-        vector<string> inter;
+        auto size1 = tags.size();
+        auto size2 = other.tags.size();
+
+        vector<string> inter(max(size1, size2));
         set_intersection(tags.begin(), tags.end(), other.tags.begin(),
                          other.tags.end(), inter.begin());
 
-        auto size1 = tags.size();
-        auto size2 = other.tags.size();
-        auto size_inter = inter.size();
+        while (!inter.empty() && inter.back() == "")
+        {
+            inter.pop_back();
+        }
 
+        auto size_inter = inter.size();
         return min(size_inter, min(size1 - size_inter, size2 - size_inter));
     }
 };
@@ -67,8 +72,11 @@ public:
             tok = str.substr(new_pos, end - new_pos);
             std::cout << tok << "\n";
             S.tags.emplace(tok);
+            v.push_back(S);
         }
         fs.close();
+
+        slides_ = v;
     }
 
     void execute()
@@ -78,12 +86,12 @@ public:
 
         res.push_back(slides_.back());
         slides_.pop_back();
-        while (!slides_.empty())
+        while (slides_.size() > 1)
         {
             Slide best = pop_random_slide(rand());
             auto best_score = res.back().score(best);
 
-            constexpr auto window = 1000;
+            constexpr auto window = 10;
             for (unsigned i = 0; i < window; ++i)
             {
                 auto rand_num = rand();
@@ -100,8 +108,15 @@ public:
             res.push_back(best);
         }
 
+        if (!slides_.empty())
+        {
+            res.push_back(slides_.front());
+        }
+
+        slides_ = std::move(res);
+
         // Do output file
-        print_result(res);
+        print_result(slides_);
 
         clog << "score: " << score() << '\n';
     }
