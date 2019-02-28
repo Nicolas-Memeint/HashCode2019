@@ -79,7 +79,7 @@ public:
     void execute()
     {
         vector<Slide> res;
-        res.resize(slides_.size());
+        res.reserve(slides_.size());
 
         res.push_back(slides_.back());
         slides_.pop_back();
@@ -123,14 +123,14 @@ public:
         cout << res.size() << '\n';
         for (const auto& e : res)
         {
-            cout << e.id;
+            cout << e.id << '\n';
         }
     }
 
     unsigned long rand()
     {
         const unsigned long n = std::distance(slides_.begin(), slides_.end());
-        const unsigned long divisor = (RAND_MAX + 1) / n;
+        const unsigned long divisor = RAND_MAX / n;
 
         unsigned long k;
         do
