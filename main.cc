@@ -11,8 +11,10 @@ using namespace std;
 struct Slide
 {
     long long id;
+    long long id2;
     bool horizontal;
     set<string> tags;
+    set<string> tags2;
 
     unsigned long score(const Slide& other)
     {
@@ -33,9 +35,21 @@ struct Slide
     }
 };
 
+
+
 class Program
 {
 public:
+
+    size_t compare(Slide s, Slide s2)
+    {
+        std::vector<string> set(1);
+        auto ls = std::set_difference(s.tags.begin(), s.tags.end(),
+                                    s2.tags.begin(), s2.tags.end(),
+                                    set.begin());
+        return set.size();
+    }
+
     void parse(int argc, char* argv[])
     {
         std::fstream fs;
@@ -45,6 +59,8 @@ public:
         getline(fs, str);
         size_t nb = atol(str.c_str());
         auto v = std::vector<Slide>();
+        auto vv = std::vector<Slide>();
+        auto vh = std::vector<Slide>();
         for (auto i = 0u; i < nb; ++i)
         {
             auto S = Slide();
@@ -69,11 +85,32 @@ public:
             new_pos = str.find(" ", pos + 1);
             tok = str.substr(new_pos, end - new_pos);
             S.tags.emplace(tok);
-            v.push_back(S);
+            if (S.horizontal)
+                vh.push_back(S);
+            else
+                vv.push_back(S);
         }
         fs.close();
-
-        slides_ = v;
+        for (; !vv.empty(); vv.pop_back())
+        {
+            auto last = vv.end() - 1;
+            auto best = vv.begin();
+            auto max = 0;
+            for (auto it = vv.begin(); it != last; it++)
+            {
+                auto nb = compare(*it, *last);
+                if (nb > max)
+                {
+                    best = it;
+                    max = nb;
+                }
+            }
+            last->id2 = best->id;
+            last->tags.merge(best->tags);
+            vh.emplace_back(*last);
+            vv.erase(best);
+        }
+        slides_ = vh;
     }
 
     void execute()
@@ -123,7 +160,13 @@ public:
         cout << res.size() << '\n';
         for (const auto& e : res)
         {
-            cout << e.id << '\n';
+            cout << e.id;
+            if (!e.horizontal)
+            {
+                cout << " ";
+                cout << e.id2;
+            }
+            cout << "\n";
         }
     }
 

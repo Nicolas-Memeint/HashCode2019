@@ -1,4 +1,4 @@
-CC = g++
+CC = clang++
 CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -g
 
 all: run
