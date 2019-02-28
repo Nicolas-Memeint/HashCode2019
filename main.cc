@@ -43,7 +43,7 @@ public:
 
     size_t compare(Slide s, Slide s2)
     {
-        std::vector<string> set(1);
+        std::vector<string> set(s.tags.size() + s2.tags.size());
         auto ls = std::set_difference(s.tags.begin(), s.tags.end(),
                                     s2.tags.begin(), s2.tags.end(),
                                     set.begin());
