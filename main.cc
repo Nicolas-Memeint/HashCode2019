@@ -47,22 +47,25 @@ public:
             size_t pos = 0;
             getline(fs, str);
             auto new_pos = str.find(" ", pos);
-            auto tok = str.substr(pos, new_pos);
+            auto tok = str.substr(pos, new_pos - pos);
             S.horizontal = tok[0] == 'H';
             S.id = i;
             pos = new_pos;
             new_pos = str.find(" ", pos + 1);
-            tok = str.substr(pos, new_pos);
+            tok = str.substr(pos, new_pos - pos);
             auto tags = atol(tok.c_str());
             auto end = str.find("\n");
             for (auto i = 0u; i < tags - 1; ++i)
             {
                 pos = new_pos;
                 new_pos = str.find(" ", pos + 1);
-                tok = str.substr(pos, new_pos);
+                tok = str.substr(pos, new_pos - pos);
                 S.tags.emplace(tok);
+                std::cout << tok << " ";
             }
-            tok = str.substr(pos, end);
+            new_pos = str.find(" ", pos + 1);
+            tok = str.substr(new_pos, end - new_pos);
+            std::cout << tok << "\n";
             S.tags.emplace(tok);
         }
         fs.close();
