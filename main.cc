@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
-#include <unordered_set>
 #include <vector>
 #include <string>
 
@@ -12,7 +12,20 @@ struct Slide
 {
     long long id;
     bool horizontal;
-    unordered_set<string> tags;
+    set<string> tags;
+
+    unsigned long score(const Slide& other)
+    {
+        vector<string> inter;
+        set_intersection(tags.begin(), tags.end(), other.tags.begin(),
+                         other.tags.end(), inter.begin());
+
+        auto size1 = tags.size();
+        auto size2 = other.tags.size();
+        auto size_inter = inter.size();
+
+        return min(size_inter, min(size1 - size_inter, size2 - size_inter));
+    }
 };
 
 class Program
@@ -56,9 +69,86 @@ public:
     }
 
     void execute()
-    {}
+    {
+        vector<Slide> res;
+        res.resize(slides_.size());
+
+        res.push_back(slides_.back());
+        slides_.pop_back();
+        while (!slides_.empty())
+        {
+            Slide best = pop_random_slide(rand());
+            auto best_score = res.back().score(best);
+
+            constexpr auto window = 1000;
+            for (unsigned i = 0; i < window; ++i)
+            {
+                auto rand_num = rand();
+                auto cur = res.back().score(slides_[rand_num]);
+
+                if (cur > best_score)
+                {
+                    slides_.push_back(best);
+                    best = pop_random_slide(rand_num);
+                    best_score = cur;
+                }
+            }
+
+            res.push_back(best);
+        }
+
+        // Do output file
+        print_result(res);
+
+        clog << "score: " << score() << '\n';
+    }
+
+    void print_result(const vector<Slide>& res)
+    {
+        cout << res.size() << '\n';
+        for (const auto& e : res)
+        {
+            cout << e.id;
+        }
+    }
+
+    unsigned long rand()
+    {
+        const unsigned long n = std::distance(slides_.begin(), slides_.end());
+        const unsigned long divisor = (RAND_MAX + 1) / n;
+
+        unsigned long k;
+        do
+        {
+            k = std::rand() / divisor;
+        } while (k >= n);
+
+        return k;
+    }
+
+    Slide pop_random_slide(unsigned long k)
+    {
+        Slide s = slides_[k];
+        slides_.erase(slides_.begin() + k);
+        return s;
+    }
+
+    unsigned long score()
+    {
+        unsigned long score = 0;
+        for (unsigned long i = 0; i < slides_.size() - 1; ++i)
+        {
+            auto set1 = slides_[i];
+            auto set2 = slides_[i + 1];
+
+            score += set1.score(set2);
+        }
+
+        return score;
+    }
 
 private:
+    vector<Slide> slides_;
 };
 
 int main(int argc, char *argv[])
