@@ -108,7 +108,9 @@ public:
             last->id2 = best->id;
             last->tags.merge(best->tags);
             vh.emplace_back(*last);
-            vv.erase(best);
+
+            swap(*best, vv.back());
+            vv.pop_back();
         }
         slides_ = vh;
     }
@@ -116,7 +118,7 @@ public:
     void execute()
     {
         auto& res = slides_;
-        constexpr unsigned long window = 1000000;
+        constexpr unsigned long window = 100000;
         auto score1 = score();
         for (unsigned long i1 = 0; i1 < window; ++i1)
         {
@@ -183,13 +185,6 @@ public:
         } while (k >= n);
 
         return k;
-    }
-
-    Slide pop_random_slide(unsigned long k)
-    {
-        Slide s = slides_[k];
-        slides_.erase(slides_.begin() + k);
-        return s;
     }
 
     unsigned long score()
