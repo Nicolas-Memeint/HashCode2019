@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -g -O2
+CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -g
 
 all: run
 

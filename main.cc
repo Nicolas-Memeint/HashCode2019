@@ -38,7 +38,6 @@ class Program
 public:
     void parse(int argc, char* argv[])
     {
-        std::cout << argv[1] << '\n';
         std::fstream fs;
         fs.open(argv[1]);
 
@@ -66,11 +65,9 @@ public:
                 new_pos = str.find(" ", pos + 1);
                 tok = str.substr(pos, new_pos - pos);
                 S.tags.emplace(tok);
-                std::cout << tok << " ";
             }
             new_pos = str.find(" ", pos + 1);
             tok = str.substr(new_pos, end - new_pos);
-            std::cout << tok << "\n";
             S.tags.emplace(tok);
             v.push_back(S);
         }
