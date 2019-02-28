@@ -115,39 +115,40 @@ public:
 
     void execute()
     {
-        vector<Slide> res;
-        res.reserve(slides_.size());
-
-        res.push_back(slides_.back());
-        slides_.pop_back();
-        while (slides_.size() > 1)
+        auto& res = slides_;
+        constexpr unsigned long window = 1000000;
+        auto score1 = score();
+        for (unsigned long i1 = 0; i1 < window; ++i1)
         {
-            Slide best = pop_random_slide(rand());
-            auto best_score = res.back().score(best);
+            auto i = rand();
+            auto j = rand();
 
-            constexpr auto window = 10;
-            for (unsigned i = 0; i < window; ++i)
+            auto score2 = score1;
+            if (i > 0)
             {
-                auto rand_num = rand();
-                auto cur = res.back().score(slides_[rand_num]);
-
-                if (cur > best_score)
-                {
-                    slides_.push_back(best);
-                    best = pop_random_slide(rand_num);
-                    best_score = cur;
-                }
+                score2 -= res[i - 1].score(res[i]);
+                score2 += res[i - 1].score(res[j]);
+            }
+            if (i < res.size() - 1)
+            {
+                score2 -= res[i].score(res[i + 1]);
+                score2 += res[j].score(res[i + 1]);
             }
 
-            res.push_back(best);
-        }
+            if (j > 0)
+            {
+                score2 -= res[j - 1].score(res[j]);
+                score2 += res[j - 1].score(res[i]);
+            }
+            if (j < res.size() - 1)
+            {
+                score2 -= res[j].score(res[j + 1]);
+                score2 += res[i].score(res[j + 1]);
+            }
 
-        if (!slides_.empty())
-        {
-            res.push_back(slides_.front());
+            if (score2 > score1)
+                swap(res[i], res[j]);
         }
-
-        slides_ = std::move(res);
 
         // Do output file
         print_result(slides_);
