@@ -1,10 +1,12 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <set>
 #include <sstream>
-#include <vector>
 #include <string>
+#include <thread>
+#include <vector>
 
 using namespace std;
 
@@ -35,22 +37,23 @@ struct Slide
     }
 };
 
-
+vector<Slide> slides_;
+unsigned long score_tot;
+mutex mut;
 
 class Program
 {
 public:
-
-    size_t compare(Slide s, Slide s2)
+    static size_t compare(Slide s, Slide s2)
     {
         std::vector<string> set(s.tags.size() + s2.tags.size());
-        auto ls = std::set_difference(s.tags.begin(), s.tags.end(),
-                                    s2.tags.begin(), s2.tags.end(),
-                                    set.begin());
+        auto ls =
+            std::set_difference(s.tags.begin(), s.tags.end(), s2.tags.begin(),
+                                s2.tags.end(), set.begin());
         return set.size();
     }
 
-    void parse(int argc, char* argv[])
+    static void parse(int argc, char* argv[])
     {
         std::fstream fs;
         fs.open(argv[1]);
@@ -115,10 +118,10 @@ public:
         slides_ = vh;
     }
 
-    void execute()
+    static void opti()
     {
-        auto& res = slides_;
-        constexpr unsigned long window = 100000;
+        auto res = slides_;
+        constexpr unsigned long window = 10000;
         auto score1 = score();
         for (unsigned long i1 = 0; i1 < window; ++i1)
         {
@@ -152,13 +155,35 @@ public:
                 swap(res[i], res[j]);
         }
 
+        mut.lock();
+        if (score1 > score_tot)
+        {
+            slides_ = res;
+            score_tot = score1;
+        }
+        mut.unlock();
+    }
+
+    static void execute()
+    {
         // Do output file
         print_result(slides_);
+
+        thread th[8];
+        for (int i = 0; i < 8; i++)
+        {
+            th[i] = thread(opti);
+        }
+
+        for (int i = 0; i < 8; i++)
+        {
+            th[i].join();
+        }
 
         clog << "score: " << score() << '\n';
     }
 
-    void print_result(const vector<Slide>& res)
+    static void print_result(const vector<Slide>& res)
     {
         cout << res.size() << '\n';
         for (const auto& e : res)
@@ -173,7 +198,7 @@ public:
         }
     }
 
-    unsigned long rand()
+    static unsigned long rand()
     {
         const unsigned long n = std::distance(slides_.begin(), slides_.end());
         const unsigned long divisor = RAND_MAX / n;
@@ -187,13 +212,13 @@ public:
         return k;
     }
 
-    unsigned long score()
+    static unsigned long score()
     {
         unsigned long score = 0;
         for (unsigned long i = 0; i < slides_.size() - 1; ++i)
         {
-            auto set1 = slides_[i];
-            auto set2 = slides_[i + 1];
+            auto& set1 = slides_[i];
+            auto& set2 = slides_[i + 1];
 
             score += set1.score(set2);
         }
@@ -202,7 +227,6 @@ public:
     }
 
 private:
-    vector<Slide> slides_;
 };
 
 int main(int argc, char *argv[])

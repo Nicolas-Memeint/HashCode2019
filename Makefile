@@ -1,5 +1,6 @@
 CC = clang++
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -g -O3
+CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -O3
+LDFLAGS=-lpthread
 
 all: run
 
