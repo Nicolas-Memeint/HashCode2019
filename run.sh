@@ -6,6 +6,6 @@ echo "--- run.sh ---"
 for f in 'in'/*.in; do
     echo $f: pending...
     out=${f#'in/'}
-    ./main "$f" > "out/${out%.in}.out"
+    ./main "$f" > "out/${out%.txt}.out"
 done
 echo "---  done  ---"
